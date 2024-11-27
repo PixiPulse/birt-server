@@ -6,6 +6,7 @@ import { ROLE_LIST } from "./lib/data";
 import {
   adminRouter,
   audioRouter,
+  authRouter,
   languageRouter,
   placeRouter,
   userRouter,
@@ -29,6 +30,9 @@ app.use(express.json());
 app.use(verifyToken);
 
 // api endpoints
+// auth
+app.use("/api/v1/login", authRouter);
+
 // only superadmin
 app.use("/api/v1/admin", verifyRoles(ROLE_LIST.superadmin), adminRouter);
 
