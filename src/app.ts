@@ -1,12 +1,21 @@
-import express from 'express';
+import express, { ErrorRequestHandler } from "express";
 import cors from "cors";
 import path from "path";
 import { config } from "dotenv";
-
+import { ROLE_LIST } from "./lib/data";
+import {
+  adminRouter,
+  audioRouter,
+  languageRouter,
+  placeRouter,
+  userRouter,
+} from "./router";
+import { verifyToken } from "./middleware/verifyToken";
+import { verifyRoles } from "./middleware/verifyRoles";
 
 config();
 
-export const app = express()
+export const app = express();
 
 // cors
 app.use(cors());
@@ -16,3 +25,26 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// verify token for following endpoints
+app.use(verifyToken);
+
+// api endpoints
+// only superadmin
+app.use("/api/v1/admin", verifyRoles(ROLE_LIST.superadmin), adminRouter);
+
+// superadmin and admin
+app.use(verifyRoles(ROLE_LIST.superadmin, ROLE_LIST.admin));
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/place", placeRouter);
+app.use("/api/v1/language", languageRouter);
+app.use("/api/v1/audio", audioRouter);
+
+// error handling middleware
+const errorHandler: ErrorRequestHandler = async (err, req, res, next) => {
+  const errorStatus = err.status || 500;
+  const errorMessage = err.message || "Something wrong!";
+
+  res.status(errorStatus).send(errorMessage);
+};
+
+app.use(errorHandler);
