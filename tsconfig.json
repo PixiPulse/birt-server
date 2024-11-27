@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "esModuleInterop": true,
+        "target": "ES2022",
+        "strict": true,
+        "sourceMap": true,
+        "outDir": "dist",
+    },
+    "include": [
+        "index.d.ts",
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "ts-node": {
+        "files": true
+    },
+}
