@@ -13,8 +13,8 @@ export const getMultiple = async (
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
 
-  const [languages, languageCount] = await Promise.all([
-    db.language.findMany({
+  const [places, placeCount] = await Promise.all([
+    db.place.findMany({
       where: {
         name: {
           startsWith: request.query.search,
@@ -24,7 +24,7 @@ export const getMultiple = async (
       skip: (page - 1) * limit,
       take: limit,
     }),
-    db.language.count({
+    db.place.count({
       where: {
         name: {
           contains: request.query.search,
@@ -35,8 +35,8 @@ export const getMultiple = async (
   ]);
 
   const res = {
-    count: languageCount,
-    data: languages,
+    count: placeCount,
+    data: places,
   };
 
   response.status(200).json(res);
@@ -48,13 +48,13 @@ export const getSingle = async (
 ) => {
   const id = request.params.id;
 
-  const language = await db.language.findUnique({
+  const place = await db.place.findUnique({
     where: { id },
   });
 
-  if (!language) return response.status(404).json({ error: "No user found!" });
+  if (!place) return response.status(404).json({ error: "No user found!" });
 
-  return response.status(200).json(language);
+  return response.status(200).json(place);
 };
 
 export const createNew = async (request: Request, response: Response) => {
@@ -72,7 +72,7 @@ export const createNew = async (request: Request, response: Response) => {
   const data = result.data;
 
   const imgFile = request.files.imgPath as UploadedFile;
-  const imgPath = "/language/" + crypto.randomUUID() + imgFile.name;
+  const imgPath = "/place/" + crypto.randomUUID() + imgFile.name;
   const uploadPath = "./assets" + imgPath;
 
   // Use the mv() method to place the file somewhere on your server
@@ -81,20 +81,20 @@ export const createNew = async (request: Request, response: Response) => {
   });
 
   try {
-    const language = await db.language.create({
+    const place = await db.place.create({
       data: {
         name: data.name,
         imgPath: imgPath,
         adminId: authUser?.id,
       },
     });
-    return response.status(201).json(language);
+    return response.status(201).json(place);
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
       if (e.code === "P2002") {
         return response.status(409).json({
-          error: `There is a unique constraint violation, a new language file cannot be created with this ${e.meta?.target}`,
+          error: `There is a unique constraint violation, a new place file cannot be created with this ${e.meta?.target}`,
         });
       }
       return response.status(400).json({ error: e.message });
@@ -108,16 +108,16 @@ export const deleteOne = async (
 ) => {
   const id = request.params.id;
 
-  const language = await db.language.findUnique({
+  const place = await db.place.findUnique({
     where: { id },
   });
 
-  if (!language) return response.status(404).json({ error: "No data" });
+  if (!place) return response.status(404).json({ error: "No data" });
 
   try {
-    await fs.unlink("./assets" + language.imgPath);
+    await fs.unlink("./assets" + place.imgPath);
 
-    await db.language.delete({
+    await db.place.delete({
       where: { id },
     });
     return response.sendStatus(204);
