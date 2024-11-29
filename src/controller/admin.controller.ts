@@ -8,6 +8,7 @@ export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
   response: Response,
 ) => {
+
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
 

@@ -26,12 +26,12 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// verify token for following endpoints
-app.use(verifyToken);
-
 // api endpoints
 // auth
 app.use("/api/v1/login", authRouter);
+
+// verify token for following endpoints
+app.use(verifyToken);
 
 // only superadmin
 app.use("/api/v1/admin", verifyRoles(ROLE_LIST.superadmin), adminRouter);

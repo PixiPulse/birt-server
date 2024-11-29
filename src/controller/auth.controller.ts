@@ -69,7 +69,7 @@ export const getAdminToken = async (request: Request, response: Response) => {
       const authUser = {
         id: user.id,
         username: user.username,
-        roles: [ROLE_LIST.user],
+        roles: user.roles,
       };
   
       const accessToken = jwt.sign(
