@@ -96,7 +96,7 @@ export const createNew = async (request: Request, response: Response) => {
       // The .code property can be accessed in a type-safe manner
       if (e.code === "P2002") {
         return response.status(409).json({
-          error: `There is a unique constraint violation, a new language cannot be created with this ${e.meta?.target}`,
+          error: `There is a unique constraint violation, a new audio cannot be created with this ${e.meta?.target}`,
         });
       }
       return response.status(400).json({ error: e.message });
@@ -110,16 +110,19 @@ export const deleteOne = async (
 ) => {
   const id = request.params.id;
 
-  const place = await db.place.findUnique({
+  const audio = await db.audio.findUnique({
     where: { id },
   });
 
-  if (!place) return response.status(404).json({ error: "No data" });
+  if (!audio) return response.status(404).json({ error: "No data" });
 
   try {
-    await fs.unlink("./assets" + place.imgPath);
+    await fs.unlink(audio.filePath);
+    for (let i = 0; i < audio.imgPath.length; i++) {
+      await fs.unlink(audio.imgPath[i]);
+    }
 
-    await db.place.delete({
+    await db.audio.delete({
       where: { id },
     });
     return response.sendStatus(204);
