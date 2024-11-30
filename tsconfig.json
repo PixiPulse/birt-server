@@ -10,12 +10,13 @@
     },
     "include": [
         "index.d.ts",
-        "src/**/*"
+        "src/**/*",
+        "prisma/seed.ts",
     ],
     "exclude": [
         "node_modules"
     ],
     "ts-node": {
         "files": true
-    },
+    }
 }

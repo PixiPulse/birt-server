@@ -3,6 +3,7 @@ import * as jwt from "jsonwebtoken";
 import { authSchema } from "../schema/auth";
 import db from "../db/db";
 import { ROLE_LIST } from "../lib/data";
+import { hashPassword, isValidPassword } from "../lib/helper";
 
 export const getUserToken = async (request: Request, response: Response) => {
   const result = authSchema.safeParse(request.body);
@@ -22,7 +23,7 @@ export const getUserToken = async (request: Request, response: Response) => {
 
     if (!user) return response.status(404).json({ error: "No user found" });
 
-    if (user.password !== data.password)
+    if (!await isValidPassword(data.password, user.password))
       return response.status(401).json({ error: "Invalid password" });
 
     const authUser = {
@@ -44,43 +45,43 @@ export const getUserToken = async (request: Request, response: Response) => {
   }
 };
 
-
 export const getAdminToken = async (request: Request, response: Response) => {
-    const result = authSchema.safeParse(request.body);
-  
-    if (result.success == false) {
-      return response.status(400).json(result.error?.formErrors.fieldErrors);
-    }
-  
-    const data = result.data;
-  
-    try {
-      const user = await db.admin.findUnique({
-        where: {
-          username: data.username,
-        },
-      });
-  
-      if (!user) return response.status(404).json({ error: "No user found" });
-  
-      if (user.password !== data.password)
-        return response.status(401).json({ error: "Invalid password" });
-  
-      const authUser = {
-        id: user.id,
-        username: user.username,
-        roles: user.roles,
-      };
-  
-      const accessToken = jwt.sign(
-        authUser,
-        process.env.ACCESS_SECRETE_KEY as string,
-      );
-  
-      response.status(200).json({
-        accessToken: accessToken,
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  const result = authSchema.safeParse(request.body);
+
+  if (result.success == false) {
+    return response.status(400).json(result.error?.formErrors.fieldErrors);
+  }
+
+  const data = result.data;
+  console.log(await hashPassword(data.password));
+
+  try {
+    const user = await db.admin.findUnique({
+      where: {
+        username: data.username,
+      },
+    });
+
+    if (!user) return response.status(404).json({ error: "No user found" });
+
+    if (!await isValidPassword(data.password, user.password))
+      return response.status(401).json({ error: "Invalid password" });
+
+    const authUser = {
+      id: user.id,
+      username: user.username,
+      roles: user.roles,
+    };
+
+    const accessToken = jwt.sign(
+      authUser,
+      process.env.ACCESS_SECRETE_KEY as string,
+    );
+
+    response.status(200).json({
+      accessToken: accessToken,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};

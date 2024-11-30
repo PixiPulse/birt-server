@@ -3,12 +3,12 @@ import { Prisma } from "@prisma/client";
 import { createQueryParams } from "../types/query-params";
 import db from "../db/db";
 import { adminSchema, updateAdminSchema } from "../schema/admin";
+import { hashPassword } from "../lib/helper";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
   response: Response,
 ) => {
-
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
 
@@ -63,9 +63,10 @@ export const createNew = async (request: Request, response: Response) => {
     return response.status(400).json(result.error?.formErrors.fieldErrors);
   }
 
-  // re-consider admin role adding process
   const data = result.data;
+  data.password = await hashPassword(data.password);
 
+  
   try {
     const adminUser = await db.admin.create({
       data: {

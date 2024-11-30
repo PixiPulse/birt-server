@@ -4,6 +4,7 @@ import { createQueryParams } from "../types/query-params";
 import db from "../db/db";
 import { adminSchema, updateAdminSchema } from "../schema/admin";
 import { updateUserSchema, userSchema } from "../schema/user";
+import { hashPassword } from "../lib/helper";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
@@ -63,8 +64,9 @@ export const createNew = async (request: Request, response: Response) => {
     return response.status(400).json(result.error?.formErrors.fieldErrors);
   }
 
-  // re-consider admin role adding process
   const data = result.data;
+  data.password = await hashPassword(data.password);
+  
 
   try {
     const user = await db.user.create({
