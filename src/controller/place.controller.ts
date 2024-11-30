@@ -56,7 +56,6 @@ export const getSingle = async (
   return response.status(200).json(place);
 };
 
-
 export const createNew = async (request: Request, response: Response) => {
   if (!request.file)
     return response.status(400).json({ imgPath: "Enter image of place" });
@@ -112,7 +111,7 @@ export const deleteOne = async (
   if (!place) return response.status(404).json({ error: "No data" });
 
   try {
-    await fs.unlink("./assets" + place.imgPath);
+    await fs.unlink(place.imgPath);
 
     await db.place.delete({
       where: { id },

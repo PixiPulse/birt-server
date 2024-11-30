@@ -112,7 +112,7 @@ export const deleteOne = async (
   if (!language) return response.status(404).json({ error: "No data" });
 
   try {
-    await fs.unlink("./assets" + language.imgPath);
+    await fs.unlink(language.imgPath);
 
     await db.language.delete({
       where: { id },

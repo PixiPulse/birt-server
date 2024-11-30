@@ -2,7 +2,6 @@ import { Response, Request } from "express-serve-static-core";
 import { Prisma } from "@prisma/client";
 import { createQueryParams } from "../types/query-params";
 import db from "../db/db";
-import { languageSchema } from "../schema/language";
 import fs from "fs/promises";
 import { audioSchema } from "../schema/audio";
 
@@ -45,7 +44,64 @@ export const getSingle = async (
 };
 
 export const createNew = async (request: Request, response: Response) => {
-  response.send("ok")
+  const files = request.files as { [fieldname: string]: Express.Multer.File[] };
+  const imgPaths = files["imgPath"];
+  const filePath = files["filePath"];
+
+  console.log(imgPaths);
+  console.log(filePath);
+
+  if (!imgPaths) return response.status(400).json({ imgPath: "Enter images" });
+  if (!filePath)
+    return response.status(400).json({ filePath: "Enter audio file" });
+
+  const result = audioSchema.safeParse(request.body);
+
+  if (result.success == false)
+    return response.status(400).json(result.error.formErrors.fieldErrors);
+
+  const data = result.data;
+
+  const authUser = request.user;
+
+  const imgUrls: string[] = [];
+  const imgUploadPaths: string[] = [];
+
+  for (let i = 0; i < imgPaths.length; i++) {
+    imgUrls.push(
+      (process.env.ADMIN_DOMAIN as string) +
+        imgPaths[i].destination.replace("./assets", "") +
+        imgPaths[i].filename,
+    );
+    imgUploadPaths.push(imgPaths[i].destination + imgPaths[i].filename);
+  }
+  try {
+    const audio = await db.audio.create({
+      data: {
+        placeId: data.placeId,
+        languageId: data.languageId,
+        imgPath: imgUploadPaths,
+        imgUrl: imgUrls,
+        filePath: filePath[0].destination + filePath[0].filename,
+        fileUrl:
+          (process.env.ADMIN_DOMAIN as string) +
+          filePath[0].destination.replace("./assets", "") +
+          filePath[0].filename,
+        adminId: authUser?.id,
+      },
+    });
+    response.status(201).json(audio);
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // The .code property can be accessed in a type-safe manner
+      if (e.code === "P2002") {
+        return response.status(409).json({
+          error: `There is a unique constraint violation, a new language cannot be created with this ${e.meta?.target}`,
+        });
+      }
+      return response.status(400).json({ error: e.message });
+    }
+  }
 };
 
 export const deleteOne = async (
