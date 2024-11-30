@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from "express-serve-static-core";
+import { Response, Request } from "express-serve-static-core";
 import { Prisma } from "@prisma/client";
 import { createQueryParams } from "../types/query-params";
 import db from "../db/db";

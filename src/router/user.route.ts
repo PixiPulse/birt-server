@@ -1,16 +1,23 @@
 import { Router } from "express";
+import {
+  createNew,
+  getMultiple,
+  getSingle,
+  updateOne,
+  deleteOne,
+} from "../controller/user.controller";
 
 const router = Router();
 
 router
   .route("/")
-  .get() // get multiple
-  .post(); // create new
+  .get(getMultiple) // get multiple
+  .post(createNew); // create new
 
 router
   .route("/:id")
-  .get() // get one
-  .patch() // update one
-  .delete(); // delete one
+  .get(getSingle) // get one
+  .patch(updateOne) // update one
+  .delete(deleteOne); // delete one
 
 export default router;
