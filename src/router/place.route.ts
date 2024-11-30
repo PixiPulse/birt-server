@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
         .split(" ")
         .join("-") +
       "-" +
-      Date.now();
+      req.body?.name;
 
     callback(null, fileName + fileExt);
   },
@@ -34,7 +34,9 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter(req, file, callback) {
-    if (file.mimetype.startsWith("image/")) {
+    if (!req.body?.name) {
+      callback(new Error("Enter name"));
+    } else if (file.mimetype.startsWith("image/")) {
       callback(null, true);
     } else {
       callback(new Error("Only image format allowed!"));

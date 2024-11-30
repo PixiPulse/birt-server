@@ -7,7 +7,6 @@ import {
 } from "../controller/language.controller";
 import multer from "multer";
 import path from "path";
-import { languageSchema } from "../schema/language";
 
 const UPLOAD_FOLDER = "./assets/language/";
 
@@ -24,9 +23,7 @@ const storage = multer.diskStorage({
         .replace(fileExt, "")
         .toLowerCase()
         .split(" ")
-        .join("-") +
-      "-" +
-      Date.now();
+        .join("-") + "-" + req.body?.name;
 
     callback(null, fileName + fileExt);
   },
@@ -35,7 +32,9 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter(req, file, callback) {
-    if (file.mimetype.startsWith("image/")) {
+    if (!req.body?.name) {
+      callback(new Error("Enter name"));
+    } else if (file.mimetype.startsWith("image/")) {
       callback(null, true);
     } else {
       callback(new Error("Only image format allowed!"));

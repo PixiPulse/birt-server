@@ -13,6 +13,7 @@ import {
 } from "./router";
 import { verifyToken } from "./middleware/verifyToken";
 import { verifyRoles } from "./middleware/verifyRoles";
+import multer from "multer";
 
 // config dotenv
 config();
@@ -49,7 +50,7 @@ const errorHandler: ErrorRequestHandler = async (err, req, res, next) => {
   const errorStatus = err.status || 500;
   const errorMessage = err.message || "Something wrong!";
 
-  res.status(errorStatus).send(errorMessage);
+  res.status(errorStatus).json({ error: errorMessage });
 };
 
 app.use(errorHandler);
