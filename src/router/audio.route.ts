@@ -1,11 +1,12 @@
 import { Router } from "express";
+import { createNew } from "../controller/audio.controller";
 
 const router = Router();
 
 router
   .route("/")
   .get() // get multiple
-  .post(); // create new
+  .post(createNew); // create new
 
 router
   .route("/:id")

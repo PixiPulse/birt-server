@@ -13,7 +13,6 @@ import {
 } from "./router";
 import { verifyToken } from "./middleware/verifyToken";
 import { verifyRoles } from "./middleware/verifyRoles";
-import fileUpload from 'express-fileupload';
 
 // config dotenv
 config();
@@ -24,7 +23,6 @@ export const app = express();
 app.use(cors());
 
 // middlewares
-app.use(fileUpload())
 app.use(express.static(path.join(__dirname, "..", "assets")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

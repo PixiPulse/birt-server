@@ -12,6 +12,7 @@ Create `.env` file with following variables
 ```
 DATABASE_URL=postgresql://username:randompassword@localhost:5432/mydb?schema=public
 SESSION_SECRET=GENERATE_CODE_AND_ADD
+ADMIN_DOMAIN="YOUR_API_DOMAIN_NAME"
 ```
 
 To generate `SESSION_SECRET` key,

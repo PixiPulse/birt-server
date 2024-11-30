@@ -1,10 +1,9 @@
-import { Response, Request } from "express-serve-static-core";
+import { Response, Request, NextFunction } from "express-serve-static-core";
 import { Prisma } from "@prisma/client";
 import { createQueryParams } from "../types/query-params";
 import db from "../db/db";
 import { languageSchema } from "../schema/language";
 import fs from "fs/promises";
-import { UploadedFile } from "express-fileupload";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
@@ -57,44 +56,42 @@ export const getSingle = async (
   return response.status(200).json(language);
 };
 
-export const createNew = async (request: Request, response: Response) => {
-  const authUser = request.user;
 
-  if (!request.files || Object.keys(request.files).length === 0) {
-    return response.status(400).json({ imgPath: "No files were uploaded." });
-  }
+export const createNew = async (request: Request, response: Response) => {
+  if (!request.file)
+    return response.status(400).json({ imgPath: "Enter image of language" });
+
+  const imgFile = request.file;
 
   const result = languageSchema.safeParse(request.body);
-  if (result.success === false) {
+
+  if (result.success == false)
     return response.status(400).json(result.error.formErrors.fieldErrors);
-  }
 
   const data = result.data;
 
-  const imgFile = request.files.imgPath as UploadedFile;
-  const imgPath = "/language/" + crypto.randomUUID() + imgFile.name;
-  const uploadPath = "./assets" + imgPath;
-
-  // Use the mv() method to place the file somewhere on your server
-  imgFile.mv(uploadPath, function (err) {
-    if (err) return response.status(500).send(err);
-  });
+  const authUser = request.user;
 
   try {
     const language = await db.language.create({
       data: {
         name: data.name,
-        imgPath: imgPath,
+        imgPath: imgFile.destination + imgFile.filename,
+        imgUrl:
+          (process.env.ADMIN_DOMAIN as string) +
+          imgFile.destination.replace("./assets", "") +
+          imgFile.filename,
         adminId: authUser?.id,
       },
     });
-    return response.status(201).json(language);
+
+    response.status(201).json(language);
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
       if (e.code === "P2002") {
         return response.status(409).json({
-          error: `There is a unique constraint violation, a new language file cannot be created with this ${e.meta?.target}`,
+          error: `There is a unique constraint violation, a new language cannot be created with this ${e.meta?.target}`,
         });
       }
       return response.status(400).json({ error: e.message });
