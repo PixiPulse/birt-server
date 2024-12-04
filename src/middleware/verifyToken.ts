@@ -13,7 +13,7 @@ export function verifyToken(
 ): any {
   const authHeader = request.headers["authorization"];
 
-  if (!authHeader?.startsWith("Bearer ")) return response.sendStatus(401);
+  if (!authHeader?.startsWith("Bearer ")) return response.status(401).json({error: "Forbidden"});
 
   const token = authHeader && authHeader?.split(" ")[1]; // token example: Bearer <TOKEN>
 

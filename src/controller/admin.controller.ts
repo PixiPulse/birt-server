@@ -20,6 +20,12 @@ export const getMultiple = async (
           mode: "insensitive",
         },
       },
+      select: {
+        id: true, 
+        username: true,
+        name: true,
+        roles: true
+      },
       skip: (page - 1) * limit,
       take: limit,
     }),
@@ -42,13 +48,19 @@ export const getMultiple = async (
 };
 
 export const getSingle = async (
-  request: Request<{ id: string }>,
+  request: Request<{ username: string }>,
   response: Response,
 ) => {
-  const id = request.params.id;
+  const username = request.params.username;
 
-  const adminUser = await db.admin.findUnique({
-    where: { id },
+  const adminUser = await db.admin.findFirst({
+    where: { username: username },
+    select: {
+      id: true, 
+      username: true,
+      name: true,
+      roles: true
+    }
   });
 
   if (!adminUser) return response.status(404).json({ error: "No user found!" });

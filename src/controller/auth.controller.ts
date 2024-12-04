@@ -49,7 +49,7 @@ export const getAdminToken = async (request: Request, response: Response) => {
   const result = authSchema.safeParse(request.body);
 
   if (result.success == false) {
-    return response.status(400).json(result.error?.formErrors.fieldErrors);
+    return response.status(400).json({error: result.error?.formErrors.fieldErrors});
   }
 
   const data = result.data;
