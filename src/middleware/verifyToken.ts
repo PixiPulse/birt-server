@@ -17,10 +17,10 @@ export function verifyToken(
 
   const token = authHeader && authHeader?.split(" ")[1]; // token example: Bearer <TOKEN>
 
-  if (token == null) return response.sendStatus(401);
+  if (token == null) return response.status(401).json({ error: "no token" });
 
   jwt.verify(token, process.env.ACCESS_SECRETE_KEY as string, (err, user) => {
-    if (err) return response.sendStatus(403);
+    if (err) return response.status(403).json({error: "invalid token"});
 
     request.user = user as AuthUser;
     next();

@@ -7,7 +7,7 @@ import fs from "fs/promises";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
-  response: Response,
+  response: Response
 ) => {
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
@@ -43,7 +43,7 @@ export const getMultiple = async (
 
 export const getSingle = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
@@ -56,7 +56,6 @@ export const getSingle = async (
   return response.status(200).json(language);
 };
 
-
 export const createNew = async (request: Request, response: Response) => {
   if (!request.file)
     return response.status(400).json({ imgPath: "Enter image of language" });
@@ -66,7 +65,9 @@ export const createNew = async (request: Request, response: Response) => {
   const result = languageSchema.safeParse(request.body);
 
   if (result.success == false)
-    return response.status(400).json(result.error.formErrors.fieldErrors);
+    return response
+      .status(400)
+      .json({ errors: result.error.formErrors.fieldErrors });
 
   const data = result.data;
 
@@ -85,7 +86,7 @@ export const createNew = async (request: Request, response: Response) => {
       },
     });
 
-    response.status(201).json(language);
+    response.status(201).json({ data: language });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
@@ -101,7 +102,7 @@ export const createNew = async (request: Request, response: Response) => {
 
 export const deleteOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
