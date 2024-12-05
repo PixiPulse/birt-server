@@ -53,7 +53,7 @@ router
 router
   .route("/:id")
   .get(getSingle) // get one
-  .patch(upload.single("imgPath"), updateOne)
+  .put(upload.single("imgPath"), updateOne)
   .delete(deleteOne); // delete one
 
 export default router;

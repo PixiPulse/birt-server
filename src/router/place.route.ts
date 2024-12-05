@@ -4,6 +4,7 @@ import {
   deleteOne,
   getMultiple,
   getSingle,
+  updateOne,
 } from "../controller/place.controller";
 import multer from "multer";
 import path from "path";
@@ -52,6 +53,7 @@ router
 router
   .route("/:id")
   .get(getSingle) // get one
+  .put(upload.single("imgPath"), updateOne)
   .delete(deleteOne); // delete one
 
 export default router;

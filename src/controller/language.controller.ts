@@ -150,7 +150,7 @@ export const updateOne = async (
       // The .code property can be accessed in a type-safe manner
       if (e.code === "P2002") {
         return response.status(409).json({
-          error: `There is a unique constraint violation, a new language cannot be created with this ${e.meta?.target}`,
+          error: `There is a unique constraint violation, a language cannot be created with this ${e.meta?.target}`,
         });
       }
       return response.status(400).json({ error: e.message });
