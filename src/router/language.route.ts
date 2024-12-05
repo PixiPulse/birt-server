@@ -4,6 +4,7 @@ import {
   deleteOne,
   getMultiple,
   getSingle,
+  updateOne,
 } from "../controller/language.controller";
 import multer from "multer";
 import path from "path";
@@ -23,7 +24,9 @@ const storage = multer.diskStorage({
         .replace(fileExt, "")
         .toLowerCase()
         .split(" ")
-        .join("-") + "-" + req.body?.name;
+        .join("-") +
+      "-" +
+      req.body?.name;
 
     callback(null, fileName + fileExt);
   },
@@ -50,6 +53,7 @@ router
 router
   .route("/:id")
   .get(getSingle) // get one
+  .patch(upload.single("imgPath"), updateOne)
   .delete(deleteOne); // delete one
 
 export default router;

@@ -100,6 +100,64 @@ export const createNew = async (request: Request, response: Response) => {
   }
 };
 
+export const updateOne = async (
+  request: Request<{ id: string }>,
+  response: Response
+) => {
+  const { id } = request.params;
+
+  const prevData = await db.language.findUnique({
+    where: { id },
+  });
+
+  if (!prevData) return response.status(404).json({ error: "No data found" });
+
+  if (!request.file)
+    return response.status(400).json({ imgPath: "Enter image of language" });
+
+  await fs.unlink(prevData.imgPath);
+
+  const imgFile = request.file;
+
+  const result = languageSchema.safeParse(request.body);
+
+  if (result.success == false)
+    return response
+      .status(400)
+      .json({ errors: result.error.formErrors.fieldErrors });
+
+  const data = result.data;
+
+  const authUser = request.user;
+
+  try {
+    const language = await db.language.update({
+      where: { id },
+      data: {
+        name: data.name || prevData.name,
+        imgPath: imgFile.destination + imgFile.filename,
+        imgUrl:
+          (process.env.ADMIN_DOMAIN as string) +
+          imgFile.destination.replace("./assets", "") +
+          imgFile.filename,
+        adminId: authUser?.id,
+      },
+    });
+
+    response.status(200).json({ data: language });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // The .code property can be accessed in a type-safe manner
+      if (e.code === "P2002") {
+        return response.status(409).json({
+          error: `There is a unique constraint violation, a new language cannot be created with this ${e.meta?.target}`,
+        });
+      }
+      return response.status(400).json({ error: e.message });
+    }
+  }
+};
+
 export const deleteOne = async (
   request: Request<{ id: string }>,
   response: Response
