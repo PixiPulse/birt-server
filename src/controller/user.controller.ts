@@ -8,7 +8,7 @@ import { hashPassword } from "../lib/helper";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
-  response: Response,
+  response: Response
 ) => {
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
@@ -44,7 +44,7 @@ export const getMultiple = async (
 
 export const getSingle = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
@@ -61,12 +61,13 @@ export const createNew = async (request: Request, response: Response) => {
   const result = userSchema.safeParse(request.body);
 
   if (result.success == false) {
-    return response.status(400).json(result.error?.formErrors.fieldErrors);
+    return response
+      .status(400)
+      .json({ errors: result.error?.formErrors.fieldErrors });
   }
 
   const data = result.data;
   data.password = await hashPassword(data.password);
-  
 
   try {
     const user = await db.user.create({
@@ -76,7 +77,7 @@ export const createNew = async (request: Request, response: Response) => {
       },
     });
 
-    return response.status(201).json(user);
+    return response.status(201).json({ data: user });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
@@ -92,14 +93,16 @@ export const createNew = async (request: Request, response: Response) => {
 
 export const updateOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
   const result = updateUserSchema.safeParse(request.body);
 
   if (result.success == false) {
-    return response.status(400).json(result.error?.formErrors.fieldErrors);
+    return response
+      .status(400)
+      .json({ errors: result.error?.formErrors.fieldErrors });
   }
 
   // re-consider admin role adding process
@@ -115,16 +118,18 @@ export const updateOne = async (
       },
     });
 
-    response.status(200).json(user);
+    response.status(200).json({ data: user });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
       if (e.code === "P2002") {
         response.status(400).json({
-          status: `There is a unique constraint violation, a new user cannot be created with this ${e.meta?.target}`,
+          error: `There is a unique constraint violation, a new user cannot be created with this ${e.meta?.target}`,
         });
       } else {
-        response.status(400).send(e.message);
+        return response
+          .status(400)
+          .json({ error: e.message.split("\n").pop() });
       }
     }
   }
@@ -132,7 +137,7 @@ export const updateOne = async (
 
 export const deleteOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 

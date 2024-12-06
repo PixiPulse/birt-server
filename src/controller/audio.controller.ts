@@ -146,7 +146,7 @@ export const createNew = async (request: Request, response: Response) => {
           error: `There is a unique constraint violation, a new audio cannot be created with this ${e.meta?.target}`,
         });
       }
-      return response.status(400).json({ error: e.message });
+      return response.status(400).json({ error: e.message.split("\n").pop() });
     }
   }
 };
