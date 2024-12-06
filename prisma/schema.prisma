@@ -43,7 +43,8 @@ model Language {
   createAt  DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  admin Admin?  @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  Audio Audio[]
 
   @@map("language")
 }
@@ -57,8 +58,9 @@ model Place {
   createAt  DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  admin Admin?  @relation(fields: [adminId], references: [id], onDelete: SetNull)
   User  User[]
+  Audio Audio[]
 
   @@map("place")
 }
@@ -75,7 +77,9 @@ model Audio {
   createAt   DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  admin    Admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  place    Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
 
   @@id([placeId, languageId])
   @@map("audio")

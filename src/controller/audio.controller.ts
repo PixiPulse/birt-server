@@ -7,7 +7,7 @@ import { audioSchema } from "../schema/audio";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
-  response: Response,
+  response: Response
 ) => {
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
@@ -16,6 +16,10 @@ export const getMultiple = async (
     db.audio.findMany({
       skip: (page - 1) * limit,
       take: limit,
+      include: {
+        place: true,
+        language: true,
+      },
     }),
     db.audio.count(),
   ]);
@@ -30,7 +34,7 @@ export const getMultiple = async (
 
 export const getSingle = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
@@ -58,7 +62,9 @@ export const createNew = async (request: Request, response: Response) => {
   const result = audioSchema.safeParse(request.body);
 
   if (result.success == false)
-    return response.status(400).json(result.error.formErrors.fieldErrors);
+    return response
+      .status(400)
+      .json({ errors: result.error.formErrors.fieldErrors });
 
   const data = result.data;
 
@@ -71,7 +77,7 @@ export const createNew = async (request: Request, response: Response) => {
     imgUrls.push(
       (process.env.ADMIN_DOMAIN as string) +
         imgPaths[i].destination.replace("./assets", "") +
-        imgPaths[i].filename,
+        imgPaths[i].filename
     );
     imgUploadPaths.push(imgPaths[i].destination + imgPaths[i].filename);
   }
@@ -90,7 +96,7 @@ export const createNew = async (request: Request, response: Response) => {
         adminId: authUser?.id,
       },
     });
-    response.status(201).json(audio);
+    response.status(201).json({ data: audio });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
@@ -106,7 +112,7 @@ export const createNew = async (request: Request, response: Response) => {
 
 export const deleteOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
