@@ -14,6 +14,26 @@ export const getMultiple = async (
 
   const [audios, audioCount] = await Promise.all([
     db.audio.findMany({
+      where: {
+        OR: [
+          {
+            language: {
+              name: {
+                startsWith: request.query.search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            place: {
+              name: {
+                startsWith: request.query.search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      },
       skip: (page - 1) * limit,
       take: limit,
       include: {
@@ -21,7 +41,28 @@ export const getMultiple = async (
         language: true,
       },
     }),
-    db.audio.count(),
+    db.audio.count({
+      where: {
+        OR: [
+          {
+            language: {
+              name: {
+                startsWith: request.query.search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            place: {
+              name: {
+                startsWith: request.query.search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      },
+    }),
   ]);
 
   const res = {
