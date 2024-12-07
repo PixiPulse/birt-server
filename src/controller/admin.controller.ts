@@ -7,7 +7,7 @@ import { hashPassword } from "../lib/helper";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
-  response: Response,
+  response: Response
 ) => {
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
@@ -21,10 +21,10 @@ export const getMultiple = async (
         },
       },
       select: {
-        id: true, 
+        id: true,
         username: true,
         name: true,
-        roles: true
+        roles: true,
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -49,18 +49,18 @@ export const getMultiple = async (
 
 export const getSingle = async (
   request: Request<{ username: string }>,
-  response: Response,
+  response: Response
 ) => {
   const username = request.params.username;
 
   const adminUser = await db.admin.findFirst({
     where: { username: username },
     select: {
-      id: true, 
+      id: true,
       username: true,
       name: true,
-      roles: true
-    }
+      roles: true,
+    },
   });
 
   if (!adminUser) return response.status(404).json({ error: "No user found!" });
@@ -72,13 +72,14 @@ export const createNew = async (request: Request, response: Response) => {
   const result = adminSchema.safeParse(request.body);
 
   if (result.success == false) {
-    return response.status(400).json(result.error?.formErrors.fieldErrors);
+    return response
+      .status(400)
+      .json({ errors: result.error?.formErrors.fieldErrors });
   }
 
   const data = result.data;
   data.password = await hashPassword(data.password);
 
-  
   try {
     const adminUser = await db.admin.create({
       data: {
@@ -86,7 +87,7 @@ export const createNew = async (request: Request, response: Response) => {
       },
     });
 
-    return response.status(201).json(adminUser);
+    return response.status(201).json({data: adminUser});
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
@@ -102,14 +103,16 @@ export const createNew = async (request: Request, response: Response) => {
 
 export const updateOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
   const result = updateAdminSchema.safeParse(request.body);
 
   if (result.success == false) {
-    return response.status(400).json(result.error?.formErrors.fieldErrors);
+    return response
+      .status(400)
+      .json({ errors: result.error?.formErrors.fieldErrors });
   }
 
   // re-consider admin role adding process
@@ -124,7 +127,7 @@ export const updateOne = async (
       },
     });
 
-    response.status(200).json(adminUser);
+    response.status(200).json({ data: adminUser });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
@@ -133,7 +136,9 @@ export const updateOne = async (
           status: `There is a unique constraint violation, a new user cannot be created with this ${e.meta?.target}`,
         });
       } else {
-        response.status(400).send(e.message);
+        return response
+          .status(400)
+          .json({ error: e.message.split("\n").pop() });
       }
     }
   }
@@ -141,7 +146,7 @@ export const updateOne = async (
 
 export const deleteOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 

@@ -36,7 +36,7 @@ app.use("/api/v1/login", authRouter);
 app.use(verifyToken);
 
 // only superadmin
-app.use("/api/v1/admin", verifyRoles(ROLE_LIST.superadmin), adminRouter);
+app.use("/api/v1/admin", adminRouter);
 
 // superadmin and admin
 app.use(verifyRoles(ROLE_LIST.superadmin, ROLE_LIST.admin));
