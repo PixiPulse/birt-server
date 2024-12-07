@@ -2,7 +2,6 @@ import { Response, Request } from "express-serve-static-core";
 import { Prisma } from "@prisma/client";
 import { createQueryParams } from "../types/query-params";
 import db from "../db/db";
-import { adminSchema, updateAdminSchema } from "../schema/admin";
 import { updateUserSchema, userSchema } from "../schema/user";
 import { hashPassword } from "../lib/helper";
 
@@ -20,6 +19,9 @@ export const getMultiple = async (
           startsWith: request.query.search,
           mode: "insensitive",
         },
+      },
+      include: {
+        place: true,
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -86,7 +88,7 @@ export const createNew = async (request: Request, response: Response) => {
           error: `There is a unique constraint violation, a new user cannot be created with this ${e.meta?.target}`,
         });
       }
-      return response.status(400).json({ error: e.message });
+      return response.status(400).json({ error: e.message.split("\n").pop() });
     }
   }
 };
