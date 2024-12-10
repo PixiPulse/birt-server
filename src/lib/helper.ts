@@ -14,5 +14,6 @@ export const isValidPassword = async (
   hashedPassword: string,
 ) => {
   console.log(await hashPassword(password))
+  console.log(hashedPassword)
   return (await hashPassword(password)) === hashedPassword;
 };

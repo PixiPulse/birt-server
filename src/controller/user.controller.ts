@@ -44,14 +44,17 @@ export const getMultiple = async (
   response.status(200).json(res);
 };
 
-export const getSingle = async (
-  request: Request<{ id: string }>,
-  response: Response
-) => {
-  const id = request.params.id;
+export const getSingle = async (request: Request, response: Response) => {
+  const authUser = request.user;
 
   const user = await db.user.findUnique({
-    where: { id },
+    where: { id: authUser?.id },
+    select: {
+      id: true,
+      placeId: true,
+      username: true,
+      name: true
+    }
   });
 
   if (!user) return response.status(404).json({ error: "No user found!" });

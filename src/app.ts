@@ -38,9 +38,9 @@ app.use(verifyToken);
 // only superadmin
 app.use("/api/v1/admin", adminRouter);
 
+app.use("/api/v1/user", userRouter);
 // superadmin and admin
 app.use(verifyRoles(ROLE_LIST.superadmin, ROLE_LIST.admin));
-app.use("/api/v1/user", userRouter);
 app.use("/api/v1/place", placeRouter);
 app.use("/api/v1/language", languageRouter);
 app.use("/api/v1/audio", audioRouter);
