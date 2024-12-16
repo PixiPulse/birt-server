@@ -8,6 +8,8 @@ import {
 } from "../controller/place.controller";
 import multer from "multer";
 import path from "path";
+import { verifyRoles } from "../middleware/verifyRoles";
+import { ROLE_LIST } from "../lib/data";
 
 const UPLOAD_FOLDER = "./assets/place/";
 
@@ -47,13 +49,24 @@ const upload = multer({
 
 router
   .route("/")
-  .get(getMultiple) // get multiple
-  .post(upload.single("imgPath"), createNew); // create new
+  .get(verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin), getMultiple) // get multiple
+  .post(
+    verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin),
+    upload.single("imgPath"),
+    createNew
+  ); // create new
 
 router
   .route("/:id")
-  .get(getSingle) // get one
-  .put(upload.single("imgPath"), updateOne)
-  .delete(deleteOne); // delete one
+  .get(
+    verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin, ROLE_LIST.user),
+    getSingle
+  ) // get one
+  .put(
+    verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin),
+    upload.single("imgPath"),
+    updateOne
+  )
+  .delete(verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin), deleteOne); // delete one
 
 export default router;
