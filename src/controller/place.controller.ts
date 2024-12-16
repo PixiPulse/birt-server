@@ -7,7 +7,7 @@ import fs from "fs/promises";
 
 export const getMultiple = async (
   request: Request<{}, {}, {}, createQueryParams>,
-  response: Response,
+  response: Response
 ) => {
   const page = Number(request.query?.page ?? 1) || 1;
   const limit = Number(request.query?.limit ?? 20) || 20;
@@ -43,7 +43,7 @@ export const getMultiple = async (
 
 export const getSingle = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 
@@ -51,7 +51,37 @@ export const getSingle = async (
     where: { id },
   });
 
-  if (!place) return response.status(404).json({ error: "No user found!" });
+  if (!place) return response.status(404).json({ error: "No place found!" });
+
+  return response.status(200).json(place);
+};
+
+export const getPlaceAudio = async (request: Request, response: Response) => {
+  const id = request.params.id;
+
+  const authUser = request.user;
+
+  if (!authUser) return response.status(401).json({ error: "Unauthorized" });
+
+  const user = await db.user.findUnique({
+    where: { id: authUser.id },
+  });
+
+  if (user?.placeId !== id)
+    return response.status(401).json({ error: "Unauthorized" });
+
+  const place = await db.audio.findMany({
+    where: { placeId: id },
+    select: {
+      id: true,
+      fileUrl: true,
+      imgUrl: true,
+      place: true,
+      language: true,
+    },
+  });
+
+  if (!place) return response.status(404).json({ error: "No place found!" });
 
   return response.status(200).json(place);
 };
@@ -65,7 +95,9 @@ export const createNew = async (request: Request, response: Response) => {
   const result = languageSchema.safeParse(request.body);
 
   if (result.success == false)
-    return response.status(400).json({errors: result.error.formErrors.fieldErrors});
+    return response
+      .status(400)
+      .json({ errors: result.error.formErrors.fieldErrors });
 
   const data = result.data;
 
@@ -84,7 +116,7 @@ export const createNew = async (request: Request, response: Response) => {
       },
     });
 
-    response.status(201).json({data: language});
+    response.status(201).json({ data: language });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
@@ -158,7 +190,7 @@ export const updateOne = async (
 
 export const deleteOne = async (
   request: Request<{ id: string }>,
-  response: Response,
+  response: Response
 ) => {
   const id = request.params.id;
 

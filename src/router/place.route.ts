@@ -3,6 +3,7 @@ import {
   createNew,
   deleteOne,
   getMultiple,
+  getPlaceAudio,
   getSingle,
   updateOne,
 } from "../controller/place.controller";
@@ -58,6 +59,7 @@ router
 
 router
   .route("/:id")
+  .post(verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin, ROLE_LIST.user), getPlaceAudio)
   .get(
     verifyRoles(ROLE_LIST.admin, ROLE_LIST.superadmin, ROLE_LIST.user),
     getSingle
