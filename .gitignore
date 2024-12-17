@@ -9,3 +9,9 @@ prisma/migrations
 
 # build file
 dist
+
+
+# assets
+audio/
+language/
+place/
